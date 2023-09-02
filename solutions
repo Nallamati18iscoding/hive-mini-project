@@ -1,0 +1,138 @@
+This is a real time dataset of the ineuron technical consultant team. You have to perform hive analysis on this given dataset.
+
+Download Dataset 1 - https://drive.google.com/file/d/1WrG-9qv6atP-W3P_-gYln1hHyFKRKMHP/view
+
+Download Dataset 2 - https://drive.google.com/file/d/1-JIPCZ34dyN6k9CqJa-Y8yxIGq6vTVXU/view
+
+Note: both files are csv files. 
+
+1. Create a schema based on the given dataset
+
+        create table agent_performance_bkp                                                                                               
+            (                                                                                                                                       
+            sl_no int,                                                                                                                            
+            ag_date string,                                                                                                                       
+            agent_name string,                                                                                                                         
+            total_chats int,
+            average_response_time string,                                                                                                                            
+            average_resolution_time string,                                                                                                                       
+            average_rating float,                                                                                                                         
+            total_feedback int)
+            row format delimited                                                                                                                    
+            fields terminated by ','
+            tblproperties("skip.header.line.count"="1"); 
+
+        create table agent_performance                                                                                              
+            (                                                                                                                                       
+            sl_no int,                                                                                                                            
+            ag_date date,                                                                                                                       
+            agent_name string,                                                                                                                         
+            total_chats int,
+            average_response_time bigint,                                                                                                                            
+            average_resolution_time bigint,                                                                                                                       
+            average_rating float,                                                                                                                         
+            total_feedback int)
+            row format delimited                                                                                                                    
+            fields terminated by ',';
+
+
+            create table agent_loging_report                                                                                                 
+            (                                                                                                                                       
+            sl_no int,                                                                                                                            
+            agent_name string,                                                                                                                       
+            ag_date date,                                                                                                                         
+            login_time bigint,
+            logout_time bigint,                                                                                                                            
+            duration bigint)
+            row format delimited                                                                                                                    
+            fields terminated by ',';
+
+
+        create table agent_loging_report_bkp                                                                                              
+            (                                                                                                                                       
+            sl_no int,                                                                                                                            
+            agent_name string,                                                                                                                       
+            ag_date string,                                                                                                                         
+            login_time string,
+            logout_time string,                                                                                                                            
+            duration string)
+            row format delimited                                                                                                                    
+            fields terminated by ','
+            tblproperties("skip.header.line.count"="1"); 
+
+
+
+2. Dump the data inside the hdfs in the given schema location.
+
+        load data local inpath ''file:///config/workspace/AgentPerformance.csv' into table agent_performance_bkp;
+
+
+        load data local inpath ''file:///config/workspace/AgentLogingReport.csv' into table agent_loging_report_bkp;
+
+
+
+
+  
+3. List of all agents names. 
+
+        select "agent_loging_report", count(DISTINCT(agent_name)) as in_log_report from agent_loging_report
+
+4. Find out agent average rating.
+
+        select agent_name, ROUND(AVG(average_rating), 2) as Average_rating
+        from agent_performance
+        group by agent_name
+        order by Average_rating desc;
+
+
+5. Total working days for each agents 
+
+        select "agent_performance", agent_name, count(distinct ag_date) as working_days
+        from agent_performance
+        group by agent_name;
+
+
+6. Total query that each agent have taken 
+
+        select agent_name, SUM(total_chats) as total_queries
+        from agent_performance
+        group by agent_name;
+
+
+7. Total Feedback that each agent have received 
+
+        select agent_name, SUM(total_feedback) as total_feedbacks
+        from agent_performance
+        group by agent_name
+        order by total_feedbacks;
+
+
+8. Agent name who have average rating between 3.5 to 4 
+
+        select agent_name, AVG(average_rating)
+        from agent_performance
+        group by agent_name
+        having ROUND(AVG(average_rating),3) between 3.5 and 4
+        order by ROUND(AVG(average_rating),1) desc;
+
+        select agent_name, AVG(average_rating)
+        from agent_performance
+        group by agent_name
+        having AVG(average_rating) between 3.5 and 4;
+
+
+9. Agent name who have rating less than 3.5 
+
+        select agent_name, AVG(average_rating)
+        from agent_performance
+        group by agent_name
+        having AVG(average_rating) < 3.5;
+
+
+10. Agent name who have rating more than 4.5 
+
+        select agent_name, AVG(average_rating)
+        from agent_performance
+        group by agent_name
+        having ROUND(AVG(average_rating), 3) > 4.5;
+         
